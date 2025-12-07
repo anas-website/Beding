@@ -3,137 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Frednzon CAD Sim - Radii</title>
+    <title>Precision Bending Sim</title>
     <style>
         :root {
-            --ui-bg: #f5f6f7;
+            --bg-color: #f4f7f6;
             --panel-bg: #ffffff;
-            --dim-blue: #0055ff;
-            --dim-red: #d50000;
-            --metal-fill: #e0f2f1; /* Light Teal/Greenish like CAD highlights */
-            --metal-stroke: #263238;
+            --text-color: #37474f;
+            --accent-blue: #2962ff;
+            --accent-red: #d50000;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; padding: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background: var(--ui-bg);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
             height: 100vh;
             display: flex; flex-direction: column;
             overflow: hidden;
         }
 
-        /* Responsive Layout */
-        .app-container { display: flex; flex-direction: column; height: 100%; }
+        /* Layout */
+        .app-layout { display: flex; flex-direction: column; height: 100%; }
         @media (min-width: 900px) {
-            .app-container { flex-direction: row-reverse; }
-            .canvas-area { flex: 2; height: 100% !important; border-left: 1px solid #ccc; }
-            .controls-area { flex: 1; max-width: 400px; }
+            .app-layout { flex-direction: row-reverse; }
+            .canvas-container { flex: 2; height: 100%; border-left: 1px solid #cfd8dc; }
+            .controls-container { flex: 1; max-width: 420px; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
         }
 
         /* Canvas */
-        .canvas-area {
+        .canvas-container {
             position: relative;
-            height: 50vh;
+            height: 55vh;
             background: #ffffff;
             /* Engineering Grid */
-            background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
             background-size: 20px 20px;
             overflow: hidden;
-            touch-action: none;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid #cfd8dc;
         }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 
-        .overlay-tools {
-            position: absolute; bottom: 10px; right: 10px;
-            display: flex; gap: 8px;
+        .overlay-ui {
+            position: absolute; bottom: 15px; right: 15px;
+            display: flex; gap: 10px;
         }
-        .tool-btn {
-            width: 40px; height: 40px;
-            background: #fff; border: 1px solid #ccc; border-radius: 8px;
-            font-size: 18px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer;
+        .icon-btn {
+            width: 42px; height: 42px;
+            background: white; border: 1px solid #b0bec5; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; color: #546e7a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer; user-select: none;
+        }
+        .icon-btn:active { background: #eceff1; transform: translateY(1px); }
+
+        .legend-box {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 12px; border-radius: 6px; border: 1px solid #cfd8dc;
+            font-size: 11px; font-family: monospace; line-height: 1.6;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         /* Controls */
-        .controls-area {
+        .controls-container {
             flex: 1;
-            padding: 15px;
+            background: var(--bg-color);
             overflow-y: auto;
-            background: var(--ui-bg);
+            padding: 15px;
         }
 
-        .panel {
-            background: var(--panel-bg); border-radius: 6px;
-            padding: 12px; margin-bottom: 10px;
+        .setting-group {
+            background: var(--panel-bg);
+            padding: 15px; border-radius: 8px;
             border: 1px solid #e0e0e0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            margin-bottom: 12px;
         }
 
-        h2 { margin: 0 0 10px 0; font-size: 13px; color: #444; border-bottom: 2px solid #263238; display: inline-block; text-transform: uppercase; }
+        h3 { margin: 0 0 12px 0; font-size: 12px; font-weight: 700; color: #78909c; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #eceff1; padding-bottom: 4px; }
         
-        .row { display: flex; gap: 10px; margin-bottom: 8px; }
-        .col { flex: 1; }
-        label { display: block; font-size: 11px; font-weight: 700; color: #546e7a; margin-bottom: 3px; }
+        .input-row { display: flex; gap: 12px; margin-bottom: 10px; }
+        .input-col { flex: 1; }
+        
+        label { display: block; font-size: 11px; font-weight: 600; color: #455a64; margin-bottom: 4px; }
         input[type="number"], select {
-            width: 100%; padding: 8px; border: 1px solid #cfd8dc;
-            border-radius: 4px; font-size: 14px; background: #fafafa;
+            width: 100%; padding: 8px 10px;
+            border: 1px solid #cfd8dc; border-radius: 4px;
+            font-size: 14px; color: #263238; background: #fafafa;
+            transition: border 0.2s;
         }
-        input:focus { border-color: #2196f3; outline: none; background: #fff; }
+        input:focus { border-color: var(--accent-blue); outline: none; background: #fff; }
 
-        /* Results */
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { text-align: left; background: #eceff1; padding: 6px; color: #455a64; }
-        td { padding: 6px; border-bottom: 1px solid #eee; }
-        .val-ext { color: var(--dim-blue); font-weight: 700; }
-        .val-proc { color: var(--dim-red); font-weight: 700; }
-
-        .legend {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(255,255,255,0.9); padding: 5px 8px;
-            border: 1px solid #ccc; font-family: monospace; font-size: 10px;
-            pointer-events: none;
+        /* Slider */
+        input[type="range"] {
+            width: 100%; margin: 10px 0;
+            accent-color: var(--accent-blue);
         }
+        .status-text { text-align: center; font-size: 11px; font-weight: bold; color: var(--accent-blue); }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        th { text-align: left; padding: 6px; background: #eceff1; color: #607d8b; border-bottom: 1px solid #cfd8dc; }
+        td { padding: 8px 6px; border-bottom: 1px solid #eee; font-weight: 500; }
+        .txt-blue { color: var(--accent-blue); }
+        .txt-red { color: var(--accent-red); }
 
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="canvas-area">
+<div class="app-layout">
+    <div class="canvas-container">
         <canvas id="simCanvas"></canvas>
         
-        <div class="legend">
-            <span style="color:var(--dim-blue)">━━━</span> External (On Line)<br>
-            <span style="color:var(--dim-red)">━━━</span> Process (Center)<br>
-            <span style="color:#000">═══</span> Suction
+        <div class="legend-box">
+            <span style="color:var(--accent-blue); font-weight:bold;">━━━</span> External (On Edge)<br>
+            <span style="color:var(--accent-red); font-weight:bold;">━━━</span> Process (Center)<br>
+            <span style="color:#333; font-weight:bold;">═══</span> Part Profile
         </div>
 
-        <div class="overlay-tools">
-            <div class="tool-btn" onclick="resetView()">⟲</div>
-            <div class="tool-btn" onclick="adjustZoom(0.9)">−</div>
-            <div class="tool-btn" onclick="adjustZoom(1.1)">+</div>
+        <div class="overlay-ui">
+            <div class="icon-btn" onclick="resetView()">⟲</div>
+            <div class="icon-btn" onclick="adjustZoom(0.9)">−</div>
+            <div class="icon-btn" onclick="adjustZoom(1.1)">+</div>
         </div>
     </div>
 
-    <div class="controls-area">
-        <div class="panel">
-            <h2>Geometry</h2>
-            <div class="row">
-                <div class="col"><label>Thickness (mm)</label><input type="number" id="inp_T" value="2.0" step="0.1"></div>
-                <div class="col"><label>Inner Radius</label><input type="number" id="inp_R" value="3.0" step="0.1"></div>
+    <div class="controls-container">
+        
+        <div class="setting-group">
+            <h3>Configuration</h3>
+            <div class="input-row">
+                <div class="input-col"><label>Thickness (mm)</label><input type="number" id="inp_T" value="2.0" step="0.1"></div>
+                <div class="input-col"><label>Inner Radius</label><input type="number" id="inp_R" value="2.0" step="0.1"></div>
             </div>
-            <div class="row">
-                <div class="col"><label>Angle (°)</label><input type="number" id="inp_A" value="90" min="70" max="180"></div>
-                <div class="col"><label>K-Factor</label><input type="number" id="inp_K" value="0.33" step="0.01"></div>
+            <div class="input-row">
+                <div class="input-col"><label>Bend Angle (°)</label><input type="number" id="inp_A" value="90" min="70" max="180"></div>
+                <div class="input-col"><label>K-Factor</label><input type="number" id="inp_K" value="0.33" step="0.01"></div>
             </div>
         </div>
 
-        <div class="panel">
-            <h2>Profile</h2>
+        <div class="setting-group">
+            <h3>Part Profile</h3>
+            <label>Shape Type</label>
             <select id="inp_Shape" style="margin-bottom:10px;">
                 <option value="L">L-Shape</option>
                 <option value="C">C-Channel</option>
@@ -142,34 +160,44 @@
             <div id="dynamicInputs"></div>
         </div>
 
-        <div class="panel">
-            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
-                <span>Length: <b id="out_Total">0.00</b></span>
-                <span>BA: <b id="out_BA">0.00</b></span>
+        <div class="setting-group">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:#78909c; margin-bottom:5px;">
+                <span>TOTAL LENGTH: <b id="out_Total" style="color:#333">0.00</b></span>
+                <span>BEND ALLOWANCE: <b id="out_BA" style="color:#333">0.00</b></span>
             </div>
-            <input type="range" id="inp_Slider" min="0" max="100" value="0" style="width:100%;">
-            <div style="text-align:center; font-size:10px; font-weight:bold; color:#666; margin-top:5px;" id="step_desc">FLAT PATTERN</div>
+            <input type="range" id="inp_Slider" min="0" max="100" value="0">
+            <div id="step_desc" class="status-text">FLAT PATTERN</div>
         </div>
 
-        <div class="panel" style="padding:0;">
+        <div class="setting-group" style="padding:0; overflow:hidden;">
             <table id="out_Table">
-                <thead><tr><th>SEG</th><th>EXTERNAL</th><th>PROCESS</th></tr></thead>
+                <thead><tr><th>SEGMENT</th><th>EXTERNAL</th><th>PROCESS</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
-        <div style="height:40px;"></div>
+        
+        <div style="height:20px"></div>
     </div>
 </div>
 
 <script>
-    // --- State ---
-    let VIEW = { scale: 2.0, zoom: 1.0, panX: 0, panY: 0, dragging: false, lx: 0, ly: 0 };
-    let STATE = { shape: 'L', inputs: [], straights: [], bendDirs: [], bendSeq: [], BA: 0, OSSB: 0, T: 2, R: 3, Angle: 90 };
+    // --- Global State ---
+    const CFG = {
+        zoom: 1.0, scale: 2.0, panX: 0, panY: 0,
+        dragging: false, lx: 0, ly: 0
+    };
+    
+    let STATE = {
+        shape: 'L', inputs: [], straights: [], 
+        bendDirs: [], bendSeq: [], 
+        BA: 0, OSSB: 0, T: 2, R: 2, Angle: 90
+    };
 
-    // --- Init ---
+    // --- Initialization ---
     window.onload = () => {
-        buildUI(); resizeCanvas(); bindEvents(); update();
-        document.getElementById('simCanvas').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        buildInputs(); resizeCanvas(); attachEvents(); update();
+        // Prevent Pull-to-refresh
+        document.body.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
     };
 
     window.addEventListener('resize', () => { resizeCanvas(); draw(); });
@@ -177,71 +205,89 @@
     function resizeCanvas() {
         const c = document.getElementById('simCanvas');
         c.width = c.clientWidth; c.height = c.clientHeight;
-        if(VIEW.panX===0) { VIEW.panX = c.width/2; VIEW.panY = c.height/2; }
+        if(CFG.panX === 0) { CFG.panX = c.width/2; CFG.panY = c.height/2; }
     }
 
-    function bindEvents() {
-        document.getElementById('inp_Shape').addEventListener('change', () => { buildUI(); update(); });
+    function attachEvents() {
+        document.getElementById('inp_Shape').addEventListener('change', () => { buildInputs(); update(); });
         ['inp_T', 'inp_R', 'inp_K', 'inp_A'].forEach(id => document.getElementById(id).addEventListener('input', update));
         document.getElementById('inp_Slider').addEventListener('input', draw);
-        
-        const c = document.getElementById('simCanvas');
-        const start = (x,y) => { VIEW.dragging=true; VIEW.lx=x; VIEW.ly=y; };
-        const move = (x,y) => { if(!VIEW.dragging)return; VIEW.panX+=x-VIEW.lx; VIEW.panY+=y-VIEW.ly; VIEW.lx=x; VIEW.ly=y; draw(); };
-        const end = () => { VIEW.dragging=false; };
 
-        c.addEventListener('mousedown', e=>start(e.clientX,e.clientY));
-        window.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+        const c = document.getElementById('simCanvas');
+        
+        // Mouse/Touch Pan
+        const start = (x,y) => { CFG.dragging=true; CFG.lx=x; CFG.ly=y; };
+        const move = (x,y) => { 
+            if(!CFG.dragging) return;
+            CFG.panX += x - CFG.lx; CFG.panY += y - CFG.ly;
+            CFG.lx=x; CFG.ly=y; draw();
+        };
+        const end = () => CFG.dragging=false;
+
+        c.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
         window.addEventListener('mouseup', end);
-        c.addEventListener('touchstart', e=>start(e.touches[0].clientX,e.touches[0].clientY));
-        c.addEventListener('touchmove', e=>move(e.touches[0].clientX,e.touches[0].clientY));
+        
+        c.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY));
+        c.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY));
         c.addEventListener('touchend', end);
     }
 
-    function adjustZoom(f) { VIEW.zoom = Math.max(0.2, Math.min(8.0, VIEW.zoom*f)); draw(); }
-    function resetView() { const c = document.getElementById('simCanvas'); VIEW.zoom=1.0; VIEW.panX=c.width/2; VIEW.panY=c.height/2; draw(); }
+    function adjustZoom(f) { CFG.zoom = Math.max(0.1, Math.min(10, CFG.zoom * f)); draw(); }
+    function resetView() { const c = document.getElementById('simCanvas'); CFG.zoom=1.0; CFG.panX=c.width/2; CFG.panY=c.height/2; draw(); }
 
-    // --- Logic ---
-    function buildUI() {
+    // --- Core Logic ---
+    function buildInputs() {
         const type = document.getElementById('inp_Shape').value;
         const div = document.getElementById('dynamicInputs');
         div.innerHTML = '';
-        let fields = [];
-        if(type === 'L') fields = [{l:'Leg A', v:60}, {l:'Leg B', v:60}];
-        else if(type === 'C') fields = [{l:'Flange A', v:40}, {l:'Web B', v:80}, {l:'Flange C', v:40}];
-        else if(type === 'Omega') fields = [{l:'Flange A', v:30}, {l:'Web B', v:50}, {l:'Top C', v:60}, {l:'Web D', v:50}, {l:'Flange E', v:30}];
         
-        fields.forEach(f => {
-            div.innerHTML += `<div class="row"><div class="col"><label>${f.l}</label><input type="number" class="dim-field" value="${f.v}" oninput="update()"></div></div>`;
+        const presets = {
+            'L': [{l:'Leg A',v:60}, {l:'Leg B',v:60}],
+            'C': [{l:'Flange A',v:40}, {l:'Web B',v:80}, {l:'Flange C',v:40}],
+            'Omega': [{l:'Flange A',v:30}, {l:'Web B',v:50}, {l:'Top C',v:60}, {l:'Web D',v:50}, {l:'Flange E',v:30}]
+        };
+        
+        presets[type].forEach(f => {
+            div.innerHTML += `<div class="input-row"><div class="input-col"><label>${f.l}</label><input type="number" class="dim-field" value="${f.v}" oninput="update()"></div></div>`;
         });
     }
 
     function update() {
+        // Read Params
         STATE.T = parseFloat(document.getElementById('inp_T').value) || 0;
         STATE.R = parseFloat(document.getElementById('inp_R').value) || 0;
         const K = parseFloat(document.getElementById('inp_K').value) || 0;
         let ang = parseFloat(document.getElementById('inp_A').value);
-        if(ang<70) ang=70; if(ang>180) ang=180;
+        if(ang < 70) ang = 70; if(ang > 180) ang = 180;
         STATE.Angle = ang;
         STATE.shape = document.getElementById('inp_Shape').value;
 
-        // Math
+        // Calc Constants
         const rad = (180 - STATE.Angle) * (Math.PI/180);
         STATE.BA = rad * (STATE.R + (K * STATE.T));
         STATE.OSSB = (STATE.R + STATE.T) * Math.tan(rad/2);
 
+        // Read Dimensions
         let dims = [];
         document.querySelectorAll('.dim-field').forEach(el => dims.push(parseFloat(el.value)||0));
         STATE.inputs = dims;
 
+        // Build Skeleton (Neutral Axis Lengths)
+        // General: Straight = Ext - OSSB (one side) or Ext - 2*OSSB (middle)
         if (STATE.shape === 'L') {
             STATE.straights = [dims[0]-STATE.OSSB, dims[1]-STATE.OSSB];
             STATE.bendDirs = [-1]; STATE.bendSeq = [0];
-        } else if (STATE.shape === 'C') {
+        } 
+        else if (STATE.shape === 'C') {
             STATE.straights = [dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-STATE.OSSB];
             STATE.bendDirs = [-1, -1]; STATE.bendSeq = [0, 1];
-        } else if (STATE.shape === 'Omega') {
-            STATE.straights = [dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-2*STATE.OSSB, dims[3]-2*STATE.OSSB, dims[4]-STATE.OSSB];
+        }
+        else if (STATE.shape === 'Omega') {
+            STATE.straights = [
+                dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-2*STATE.OSSB,
+                dims[3]-2*STATE.OSSB, dims[4]-STATE.OSSB
+            ];
             STATE.bendDirs = [-1, 1, 1, -1]; STATE.bendSeq = [0, 3, 1, 2];
         }
 
@@ -253,14 +299,17 @@
         const tb = document.querySelector('#out_Table tbody');
         tb.innerHTML = '';
         let tot = 0;
+        
         STATE.straights.forEach((s, i) => {
             let proc = 0;
             let isEnd = (i===0 || i===STATE.straights.length-1);
             let isOmegaWeb = (STATE.shape === 'Omega' && (i === 1 || i === 3));
-            if (isOmegaWeb || isEnd) proc = ext[i] - STATE.OSSB + (STATE.BA/2);
+            
+            if(isOmegaWeb || isEnd) proc = ext[i] - STATE.OSSB + (STATE.BA/2);
             else proc = ext[i] - 2*STATE.OSSB + STATE.BA;
+            
             tot += proc;
-            tb.innerHTML += `<tr><td>${i+1}</td><td class="val-ext">${ext[i].toFixed(2)}</td><td class="val-proc">${proc.toFixed(2)}</td></tr>`;
+            tb.innerHTML += `<tr><td>${i+1}</td><td class="txt-blue">${ext[i].toFixed(2)}</td><td class="txt-red">${proc.toFixed(2)}</td></tr>`;
         });
         document.getElementById('out_Total').innerText = tot.toFixed(2);
         document.getElementById('out_BA').innerText = STATE.BA.toFixed(2);
@@ -273,41 +322,42 @@
         const W = c.width; const H = c.height;
         ctx.clearRect(0,0,W,H);
 
-        const slider = parseFloat(document.getElementById('inp_Slider').value);
-        const progress = slider / 100;
-        
-        // Calc Angles
+        const progress = parseFloat(document.getElementById('inp_Slider').value) / 100;
+
+        // 1. Calculate Angles
         let angles = new Array(STATE.bendDirs.length).fill(0);
         let steps = STATE.bendSeq.length;
         let stepIdx = Math.floor(progress * steps);
         if(stepIdx >= steps) stepIdx = steps-1;
-        let localP = (progress*steps) - stepIdx;
+        let localP = (progress * steps) - stepIdx;
+        
         const targetRad = (180 - STATE.Angle) * (Math.PI/180);
 
         for(let i=0; i<stepIdx; i++) angles[STATE.bendSeq[i]] = targetRad * STATE.bendDirs[STATE.bendSeq[i]];
-        if(progress>0) angles[STATE.bendSeq[stepIdx]] = (targetRad * STATE.bendDirs[STATE.bendSeq[stepIdx]]) * localP;
+        if(progress > 0) angles[STATE.bendSeq[stepIdx]] = (targetRad * STATE.bendDirs[STATE.bendSeq[stepIdx]]) * localP;
 
         const lbls = STATE.shape==='Omega' ? ['A','E','B','D'] : [`${stepIdx+1}`,`${stepIdx+2}`];
-        document.getElementById('step_desc').innerText = progress===0?"FLAT":(progress===1?"FINISHED":`BENDING ${lbls[stepIdx]}`);
+        document.getElementById('step_desc').innerText = progress===0 ? "FLAT PATTERN" : (progress===1 ? "FINISHED" : `BENDING ${lbls[stepIdx]}`);
 
-        // --- Calculate Skeleton Nodes (Neutral Axis) ---
+        // 2. Build Skeleton Nodes (Neutral Axis)
+        // We track (x, y) and incoming Angle
         let nodes = [{x:0, y:0, ang:0}];
         let ca = 0;
-        for(let i=0; i<STATE.straights.length; i++){
+        for(let i=0; i<STATE.straights.length; i++) {
             let len = STATE.straights[i];
             let nx = nodes[i].x + len * Math.cos(ca);
             let ny = nodes[i].y + len * Math.sin(ca);
-            nodes.push({x:nx, y:ny, ang: ca}); // Store incoming angle
+            // Store node with rotation
+            nodes.push({x:nx, y:ny, ang: ca}); 
             if(i < angles.length) ca += angles[i];
         }
-        // Update last node angle? No, straight segments define vector.
 
-        // --- Camera ---
+        // 3. Camera Transform
         ctx.save();
-        ctx.translate(VIEW.panX, VIEW.panY);
-        const S = VIEW.scale * VIEW.zoom;
+        ctx.translate(CFG.panX, CFG.panY);
+        const S = CFG.scale * CFG.zoom;
 
-        // Anchor
+        // Anchor logic
         let anchor = 0;
         if(STATE.shape === 'C') anchor = (stepIdx>=1) ? 1 : 0;
         if(STATE.shape === 'Omega') {
@@ -321,158 +371,139 @@
 
         ctx.rotate(-baseAng); ctx.translate(-mx*S, -my*S);
 
-        // --- Draw Bed ---
-        let bedY = p1.y*S + (STATE.T*S)/2 + 2;
-        ctx.fillStyle = "#f0f0f0"; ctx.fillRect(mx*S - 500, bedY, 1000, 20);
-        ctx.strokeStyle = "#ddd"; ctx.strokeRect(mx*S - 500, bedY, 1000, 20);
+        // 4. Draw Part Profile (Solid with Radii)
+        drawPartProfile(ctx, nodes, angles, S);
 
-        // --- DRAW PROFILE (CAD STYLE) ---
-        // We will construct the Inner and Outer path
-        // Inner Radius = R. Outer Radius = R+T.
-        // The skeleton nodes are at the NEUTRAL axis? 
-        // For visualization simplicity, let's assume the nodes are on the Inner surface corner (sharp)
-        // and we fillet them.
-        // Actually, to keep dims accurate to OSSB logic, Nodes are Virtual Sharps of the NEUTRAL axis or Inner?
-        // OSSB is calculated on R+T. 
-        // Let's draw the profile by tracing lines and arcs.
-        
-        ctx.lineJoin = "round"; ctx.lineCap = "round";
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--metal-fill');
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--metal-stroke');
-        ctx.lineWidth = 1.5;
+        // 5. Draw Dimensions
+        drawDimensions(ctx, nodes, S);
 
-        drawSolidProfile(ctx, nodes, angles, S);
-
-        // --- DRAW DIMS ---
-        drawDimensions(ctx, nodes, angles, S);
-
-        // --- Suction ---
+        // 6. Suction
         drawSuction(ctx, nodes[anchor], nodes[anchor+1], S);
 
         ctx.restore();
     }
 
-    function drawSolidProfile(ctx, nodes, angles, S) {
-        // This is a simplified "Thick Line" with specific radii using Stroke only
-        // To do filled polygon with distinct inner/outer radii is complex for this snippet.
-        // We will simulate it by drawing the Neutral Axis thick, but we want to see the radius.
+    function drawPartProfile(ctx, nodes, angles, S) {
+        // We draw the "Inner" path and "Outer" path relative to Neutral Axis.
+        // Neutral Axis is at T/2 roughly (actually K-factor dependent, but for visual T/2 is safest center).
+        // Nodes are at Neutral Axis.
         
-        // Approach: Draw Path of Centerline.
-        // Use ctx.lineWidth = T. 
-        // But corners need to be arcs.
-        // We will manually draw the "Outer" path and "Inner" path and fill between.
+        // Visual Thickness
+        const halfT = (STATE.T * S) / 2;
         
-        ctx.beginPath();
-        
-        // Helper to get offset points
-        const getOffset = (idx, offset) => {
-            // Segment vector
-            let n1 = nodes[idx], n2 = nodes[idx+1];
-            let dx = n2.x - n1.x, dy = n2.y - n1.y;
-            let len = Math.sqrt(dx*dx+dy*dy);
-            let ux = dx/len, uy = dy/len;
-            let nx = -uy, ny = ux; // Normal
-            return {x: n1.x*S + nx*offset, y: n1.y*S + ny*offset, ux, uy, nx, ny};
-        };
-
-        // We'll just draw the stroke with round joins for now to ensure robustness 
-        // while fixing the Dimension lines which was the main request.
-        // To "Display Radii" accurately:
-        // We will rely on lineJoin="round" which creates a radius of T/2. 
-        // This is visually close for T=2, R=2.
-        // If R is large, this looks wrong.
-        
-        // Better Visualization for Large R:
-        // Draw the path using arcTo at the corners.
-        // Corner Radius = R + T/2 (for neutral axis).
-        
-        let path = new Path2D();
-        let r_neutral = STATE.R + (STATE.T/2);
-        
-        path.moveTo(nodes[0].x*S, nodes[0].y*S);
-        for(let i=1; i<nodes.length-1; i++) {
-            // Draw line to "Tangent Start"
-            // For sim, simply connecting nodes with arcTo works well
-            path.arcTo(nodes[i].x*S, nodes[i].y*S, nodes[i+1].x*S, nodes[i+1].y*S, r_neutral * S);
-        }
-        path.lineTo(nodes[nodes.length-1].x*S, nodes[nodes.length-1].y*S);
-        
-        ctx.lineCap = "butt"; // Flat ends
-        ctx.strokeStyle = "#263238";
+        ctx.lineJoin = "round"; ctx.lineCap = "round";
         ctx.lineWidth = STATE.T * S;
-        ctx.stroke(path);
+        ctx.strokeStyle = "#37474f"; 
+
+        // Draw Thick Stroke (Simplified CAD look)
+        // Using stroke simulates the radii via lineJoin='round' which is Radius = Thickness/2
+        // To show "Inserted Radius", we must check if R is different.
         
-        // Fill effect (Thin lighter line inside)
+        // Advanced: Draw path with explicit arcs
+        ctx.beginPath();
+        ctx.moveTo(nodes[0].x*S, nodes[0].y*S);
+        
+        // Neutral Axis Path
+        // We use arcTo to simulate the bend radius at neutral axis
+        // R_neutral = R_inner + (K * T) -> roughly R + T/3
+        const r_neutral = (STATE.R * S) + (STATE.T * S * 0.4); 
+
+        for(let i=1; i<nodes.length-1; i++) {
+            ctx.arcTo(nodes[i].x*S, nodes[i].y*S, nodes[i+1].x*S, nodes[i+1].y*S, r_neutral);
+        }
+        ctx.lineTo(nodes[nodes.length-1].x*S, nodes[nodes.length-1].y*S);
+        
+        // Fill Style
+        ctx.lineWidth = STATE.T * S;
+        ctx.strokeStyle = "#455a64"; // Outline Color
+        ctx.stroke();
+        
+        // Inner Fill
         ctx.lineWidth = (STATE.T * S) - 2;
-        ctx.strokeStyle = "#cfd8dc";
-        ctx.stroke(path);
-        
-        // Centerline
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 3]);
-        ctx.strokeStyle = "rgba(0,0,0,0.3)";
-        ctx.stroke(path);
-        ctx.setLineDash([]);
+        ctx.strokeStyle = "#cfd8dc"; // Metal Color
+        ctx.stroke();
     }
 
-    function drawDimensions(ctx, nodes, angles, S) {
-        STATE.straights.forEach((st, i)=>{
+    function drawDimensions(ctx, nodes, S) {
+        const halfT = (STATE.T * S) / 2;
+
+        STATE.straights.forEach((st, i) => {
             let n1 = nodes[i], n2 = nodes[i+1];
             
-            // Calc Values
-            let isEnd = (i==0 || i==STATE.straights.length-1);
-            let isOmegaWeb = (STATE.shape === 'Omega' && (i === 1 || i === 3));
-            let valProc = (isOmegaWeb || isEnd) ? STATE.inputs[i] - STATE.OSSB + (STATE.BA/2) : STATE.inputs[i] - 2*STATE.OSSB + STATE.BA;
+            // Calculate Unit Vector & Normal
+            let dx = n2.x - n1.x, dy = n2.y - n1.y;
+            let len = Math.sqrt(dx*dx + dy*dy);
+            let ux = dx/len, uy = dy/len; // Unit vector along segment
+            let nx = -uy, ny = ux;        // Normal vector (outwards)
+
+            // --- 1. Process Dim (Red) ---
+            // Center to Center (Neutral Axis)
+            let valProc = getProcessVal(i);
+            let offProc = halfT + (20 * CFG.zoom); 
+            drawDimLine(ctx, n1, n2, nx, ny, ux, uy, offProc, 0, valProc.toFixed(2), "#d50000", S);
+
+            // --- 2. External Dim (Blue) ---
+            // On the EDGE (Surface). 
+            // Surface Point = Node + Normal * halfT
+            // Start of Dim = Surface Point - (UnitVector * OSSB)
             
-            // External: This is the user input
             let valExt = STATE.inputs[i];
-
-            // 1. Process Dim (Center to Center) - RED
-            let offProc = (STATE.T*S)/2 + (20 * VIEW.zoom);
-            drawDimLine(ctx, n1, n2, offProc, valProc.toFixed(2), '#d50000', S, 0);
-
-            // 2. External Dim (Outer Face to Outer Face) - BLUE
-            // We need to offset the anchor points by T/2 + OSSB
-            // The "Line" should be exactly on the outer surface? 
-            // "Exactly on the lines" -> Offset = T/2.
-            let offExt = (STATE.T*S)/2 + (2 * VIEW.zoom); // Very close to surface
-            // Extension amount = OSSB
-            drawDimLine(ctx, n1, n2, offExt, valExt.toFixed(2), '#0055ff', S, STATE.OSSB*S);
+            let offExt = halfT; // Exactly on surface
+            
+            // Extension Length (OSSB scaled)
+            let extLen = STATE.OSSB * S;
+            
+            drawDimLine(ctx, n1, n2, nx, ny, ux, uy, offExt, extLen, valExt.toFixed(2), "#2962ff", S, true);
         });
     }
 
-    function drawDimLine(ctx, p1, p2, off, txt, col, S, extLen) {
-        let ux = p2.x-p1.x, uy = p2.y-p1.y;
-        let len = Math.sqrt(ux*ux + uy*uy);
-        ux/=len; uy/=len;
-        let nx = -uy, ny = ux;
+    function getProcessVal(i) {
+        let isEnd = (i===0 || i===STATE.straights.length-1);
+        let isOmegaWeb = (STATE.shape === 'Omega' && (i === 1 || i === 3));
+        if(isOmegaWeb || isEnd) return STATE.inputs[i] - STATE.OSSB + (STATE.BA/2);
+        return STATE.inputs[i] - 2*STATE.OSSB + STATE.BA;
+    }
 
-        // Base points (Neutral Axis)
-        let b1x = p1.x*S, b1y = p1.y*S;
-        let b2x = p2.x*S, b2y = p2.y*S;
+    function drawDimLine(ctx, n1, n2, nx, ny, ux, uy, offset, extension, txt, col, S, onEdge=false) {
+        // Base points (Neutral Axis scaled)
+        let bx1 = n1.x*S, by1 = n1.y*S;
+        let bx2 = n2.x*S, by2 = n2.y*S;
 
-        // Dimension Line Points
-        let d1x = b1x + nx*off, d1y = b1y + ny*off;
-        let d2x = b2x + nx*off, d2y = b2y + ny*off;
+        // Shift to offset (Dimension Line level)
+        let d1x = bx1 + nx*offset, d1y = by1 + ny*offset;
+        let d2x = bx2 + nx*offset, d2y = by2 + ny*offset;
 
-        // Adjust for External Extension (Virtual Sharp)
-        // Move d1 back by extLen, d2 forward by extLen
-        let f1x = d1x - ux*extLen, f1y = d1y - uy*extLen;
-        let f2x = d2x + ux*extLen, f2y = d2y + uy*extLen;
+        // Apply extension (virtual sharp)
+        let f1x = d1x - ux*extension, f1y = d1y - uy*extension;
+        let f2x = d2x + ux*extension, f2y = d2y + uy*extension;
 
         ctx.save();
         ctx.strokeStyle = col; ctx.fillStyle = col;
-        ctx.lineWidth = 1.5; ctx.font = `bold ${11*VIEW.zoom}px sans-serif`;
+        ctx.lineWidth = onEdge ? 2 : 1; 
+        ctx.font = `bold ${11*CFG.zoom}px sans-serif`;
 
         // Draw Line
         ctx.beginPath(); ctx.moveTo(f1x, f1y); ctx.lineTo(f2x, f2y); ctx.stroke();
         
-        // Witness marks (Ticks)
-        let tick = 4*VIEW.zoom;
-        ctx.beginPath();
-        ctx.moveTo(f1x + nx*tick, f1y + ny*tick); ctx.lineTo(f1x - nx*tick, f1y - ny*tick);
-        ctx.moveTo(f2x + nx*tick, f2y + ny*tick); ctx.lineTo(f2x - nx*tick, f2y - ny*tick);
-        ctx.stroke();
+        // Witness Lines (if not on edge)
+        if(!onEdge) {
+            let tick = 4*CFG.zoom;
+            ctx.beginPath();
+            ctx.moveTo(f1x+nx*tick, f1y+ny*tick); ctx.lineTo(f1x-nx*tick, f1y-ny*tick);
+            ctx.moveTo(f2x+nx*tick, f2y+ny*tick); ctx.lineTo(f2x-nx*tick, f2y-ny*tick);
+            ctx.stroke();
+        } else {
+            // If on edge, draw small perpendicular ticks at the virtual sharp
+            let tick = 4*CFG.zoom;
+            ctx.beginPath();
+            ctx.moveTo(f1x, f1y); ctx.lineTo(f1x + nx*tick, f1y + ny*tick);
+            ctx.moveTo(f2x, f2y); ctx.lineTo(f2x + nx*tick, f2y + ny*tick);
+            ctx.stroke();
+        }
+
+        // Arrows (Technical)
+        drawArrow(ctx, f1x, f1y, f2x, f2y, CFG.zoom);
+        drawArrow(ctx, f2x, f2y, f1x, f1y, CFG.zoom);
 
         // Text
         let mx = (f1x+f2x)/2, my = (f1y+f2y)/2;
@@ -480,15 +511,29 @@
         if(ang > Math.PI/2 || ang < -Math.PI/2) ang += Math.PI;
 
         ctx.translate(mx,my); ctx.rotate(ang);
-        // Draw Text Background to clear line
+        
+        // If on edge, push text slightly up so it doesn't overlay the line
+        let textOffset = onEdge ? -8*CFG.zoom : 0;
+        
         let tw = ctx.measureText(txt).width+4;
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
-        ctx.fillRect(-tw/2, -6*VIEW.zoom, tw, 12*VIEW.zoom);
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fillRect(-tw/2, -6*CFG.zoom + textOffset, tw, 12*CFG.zoom);
         ctx.fillStyle = col;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(txt, 0, 0);
+        ctx.fillText(txt, 0, textOffset);
 
         ctx.restore();
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, z) {
+        let size = 6 * z;
+        let ang = Math.atan2(y2-y1, x2-x1);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1 + size*Math.cos(ang+Math.PI/6), y1 + size*Math.sin(ang+Math.PI/6));
+        ctx.lineTo(x1 + size*Math.cos(ang-Math.PI/6), y1 + size*Math.sin(ang-Math.PI/6));
+        ctx.closePath();
+        ctx.fill();
     }
 
     function drawSuction(ctx, p1, p2, S) {
@@ -498,14 +543,25 @@
         ctx.save();
         ctx.translate(cx,cy); ctx.rotate(ang);
         
-        let dist = (STATE.T*S)/2 + 2;
-        let w = 20*VIEW.zoom, h = 6*VIEW.zoom;
+        let halfT = (STATE.T * S) / 2;
+        let dist = halfT + 2; 
+
+        // Schematic
+        ctx.strokeStyle = "#333"; ctx.lineWidth = 1.5; ctx.fillStyle="rgba(0,0,0,0.1)";
+        let w = 18*CFG.zoom, h = 5*CFG.zoom;
         
-        ctx.fillStyle = "rgba(50,50,50,0.2)"; ctx.strokeStyle = "#333";
-        ctx.beginPath(); ctx.rect(-w, -dist-h, w*2, h); ctx.fill(); ctx.stroke();
+        // Left Pad
+        ctx.beginPath(); ctx.rect(-20*CFG.zoom - w/2, -dist-h, w, h); ctx.fill(); ctx.stroke();
+        // Right Pad
+        ctx.beginPath(); ctx.rect(20*CFG.zoom - w/2, -dist-h, w, h); ctx.fill(); ctx.stroke();
         
-        // Stem
-        ctx.beginPath(); ctx.moveTo(0, -dist-h); ctx.lineTo(0, -dist-h-15*VIEW.zoom); ctx.stroke();
+        // Frame
+        ctx.beginPath();
+        ctx.moveTo(-20*CFG.zoom, -dist-h); ctx.lineTo(-20*CFG.zoom, -dist-h-10*CFG.zoom);
+        ctx.lineTo(20*CFG.zoom, -dist-h-10*CFG.zoom);
+        ctx.lineTo(20*CFG.zoom, -dist-h);
+        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -dist-h-10*CFG.zoom); ctx.lineTo(0, -dist-h-25*CFG.zoom); ctx.stroke();
         
         ctx.restore();
     }
