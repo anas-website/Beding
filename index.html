@@ -3,65 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Frednzon CAD Sim - Pro Dimensions</title>
+    <title>Frednzon CAD Sim - Precision</title>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --panel-bg: #ffffff;
-            --accent-blue: #0044cc; /* Darker engineering blue */
-            --accent-red: #cc0000;
-            --text-main: #333;
-            --border: #ccc;
+            --bg: #f4f7f6;
+            --panel: #ffffff;
+            --accent-blue: #0044cc;
+            --accent-red: #d32f2f;
+            --text: #37474f;
+            --border: #cfd8dc;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
             height: 100vh;
             display: flex; flex-direction: column;
             overflow: hidden;
+            color: var(--text);
         }
 
-        /* Responsive Layout */
+        /* Layout */
         .app-layout { display: flex; flex-direction: column; height: 100%; }
         @media (min-width: 900px) {
             .app-layout { flex-direction: row-reverse; }
-            .canvas-area { flex: 2; height: 100%; border-left: 1px solid var(--border); }
-            .controls-area { flex: 1; max-width: 400px; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+            .canvas-wrap { flex: 2; height: 100%; border-left: 1px solid var(--border); }
+            .controls-wrap { flex: 1; max-width: 420px; box-shadow: -2px 0 10px rgba(0,0,0,0.05); }
         }
 
         /* Canvas */
-        .canvas-area {
+        .canvas-wrap {
             position: relative;
-            height: 50vh;
+            height: 55vh;
             background: #fff;
-            /* Fine Engineering Grid */
+            /* Precise Engineering Grid */
             background-image: 
-                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), 
-                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
             background-size: 20px 20px;
             overflow: hidden;
             touch-action: none;
             border-bottom: 1px solid var(--border);
         }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-        /* Overlay Tools */
-        .overlay-tools {
+        .tools {
             position: absolute; bottom: 15px; right: 15px;
             display: flex; gap: 8px;
         }
-        .tool-btn {
+        .btn-icon {
             width: 40px; height: 40px;
-            background: #fff; border: 1px solid #aaa; border-radius: 6px;
-            font-size: 18px; color: #444;
+            background: #fff; border: 1px solid #b0bec5; border-radius: 6px;
+            font-size: 18px; color: #546e7a;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; user-select: none;
         }
-        .tool-btn:active { background: #f0f0f0; }
+        .btn-icon:active { background: #eceff1; }
 
         .legend {
             position: absolute; top: 15px; left: 15px;
@@ -72,80 +72,71 @@
         }
 
         /* Controls */
-        .controls-area {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f8f9fa;
+        .controls-wrap {
+            flex: 1; padding: 15px; overflow-y: auto; background: #f8f9fa;
         }
-
         .panel {
-            background: var(--panel-bg);
-            border: 1px solid #ddd; border-radius: 6px;
-            padding: 12px; margin-bottom: 10px;
+            background: var(--panel); border: 1px solid #e0e0e0;
+            border-radius: 6px; padding: 12px; margin-bottom: 10px;
         }
+        h3 { margin: 0 0 10px 0; font-size: 12px; color: #78909c; text-transform: uppercase; border-bottom: 2px solid #eceff1; padding-bottom: 5px; }
 
-        h3 { margin: 0 0 10px 0; font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
-
-        .input-group { display: flex; gap: 10px; margin-bottom: 8px; }
-        .input-wrap { flex: 1; }
+        .row { display: flex; gap: 10px; margin-bottom: 8px; }
+        .col { flex: 1; }
         
-        label { display: block; font-size: 11px; font-weight: 600; color: #666; margin-bottom: 3px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #546e7a; margin-bottom: 3px; }
         input[type="number"], select {
-            width: 100%; padding: 8px;
-            border: 1px solid #ccc; border-radius: 4px;
-            font-size: 14px; background: #fff;
+            width: 100%; padding: 8px; border: 1px solid #cfd8dc;
+            border-radius: 4px; font-size: 14px; background: #fafafa;
         }
-        input:focus { border-color: var(--accent-blue); outline: none; }
+        input:focus { border-color: var(--accent-blue); outline: none; background: #fff; }
 
-        /* Slider */
         input[type="range"] { width: 100%; margin: 10px 0; accent-color: var(--accent-blue); }
-        .status-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: #444; margin-bottom: 5px; }
+        .info-bar { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: #333; margin-bottom: 5px; }
 
         /* Table */
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { text-align: left; padding: 6px; background: #eee; border-bottom: 1px solid #ccc; color: #555; }
+        th { text-align: left; padding: 6px; background: #eceff1; border-bottom: 1px solid #cfd8dc; color: #607d8b; }
         td { padding: 6px; border-bottom: 1px solid #eee; }
-        .val-ext { color: var(--accent-blue); font-weight: 700; }
-        .val-proc { color: var(--accent-red); font-weight: 700; }
+        .txt-blue { color: var(--accent-blue); font-weight: 700; }
+        .txt-red { color: var(--accent-red); font-weight: 700; }
 
     </style>
 </head>
 <body>
 
 <div class="app-layout">
-    
-    <div class="canvas-area">
+    <div class="canvas-wrap">
         <canvas id="simCanvas"></canvas>
         
         <div class="legend">
-            <span style="color:var(--accent-blue)">├───┤</span> External (CAD Style)<br>
-            <span style="color:var(--accent-red)">├───┤</span> Process (Center)<br>
-            <span style="color:#222">═════</span> Part Profile
+            <span style="color:var(--accent-blue)">├───┤</span> Ext (Virtual Sharp)<br>
+            <span style="color:var(--accent-red)">├───┤</span> Proc (Neutral Axis)<br>
+            <span style="color:#222">═════</span> Material
         </div>
 
-        <div class="overlay-tools">
-            <div class="tool-btn" onclick="resetView()">⟲</div>
-            <div class="tool-btn" onclick="adjustZoom(0.9)">−</div>
-            <div class="tool-btn" onclick="adjustZoom(1.1)">+</div>
+        <div class="tools">
+            <div class="btn-icon" onclick="resetView()">⟲</div>
+            <div class="btn-icon" onclick="adjustZoom(0.9)">−</div>
+            <div class="btn-icon" onclick="adjustZoom(1.1)">+</div>
         </div>
     </div>
 
-    <div class="controls-area">
+    <div class="controls-wrap">
         <div class="panel">
-            <h3>Configuration</h3>
-            <div class="input-group">
-                <div class="input-wrap"><label>Thickness (mm)</label><input type="number" id="inp_T" value="2.0" step="0.1"></div>
-                <div class="input-wrap"><label>Inner Radius</label><input type="number" id="inp_R" value="3.0" step="0.1"></div>
+            <h3>Parameters</h3>
+            <div class="row">
+                <div class="col"><label>Thickness (mm)</label><input type="number" id="inp_T" value="2.0" step="0.1"></div>
+                <div class="col"><label>Inner Radius</label><input type="number" id="inp_R" value="3.0" step="0.1"></div>
             </div>
-            <div class="input-group">
-                <div class="input-wrap"><label>Angle (°)</label><input type="number" id="inp_A" value="90" min="70" max="180"></div>
-                <div class="input-wrap"><label>K-Factor</label><input type="number" id="inp_K" value="0.33" step="0.01"></div>
+            <div class="row">
+                <div class="col"><label>Angle (°)</label><input type="number" id="inp_A" value="90" min="70" max="180"></div>
+                <div class="col"><label>K-Factor</label><input type="number" id="inp_K" value="0.33" step="0.01"></div>
             </div>
         </div>
 
         <div class="panel">
-            <h3>Shape Profile</h3>
+            <h3>Profile</h3>
             <select id="inp_Shape" style="width:100%; margin-bottom:10px;">
                 <option value="L">L-Shape</option>
                 <option value="C">C-Channel</option>
@@ -155,12 +146,12 @@
         </div>
 
         <div class="panel">
-            <div class="status-bar">
-                <span>CUT LENGTH: <span id="out_Total">0.00</span></span>
+            <div class="info-bar">
+                <span>CUT LEN: <span id="out_Total">0.00</span></span>
                 <span>BA: <span id="out_BA">0.00</span></span>
             </div>
             <input type="range" id="inp_Slider" min="0" max="100" value="0">
-            <div style="text-align:center; font-size:10px; font-weight:bold; color:#777; margin-top:2px;" id="step_desc">FLAT PATTERN</div>
+            <div style="text-align:center; font-size:10px; font-weight:bold; color:#90a4ae;" id="step_desc">FLAT PATTERN</div>
         </div>
 
         <div class="panel" style="padding:0;">
@@ -169,13 +160,12 @@
                 <tbody></tbody>
             </table>
         </div>
-        
-        <div style="height:40px"></div>
+        <div style="height:40px;"></div>
     </div>
 </div>
 
 <script>
-    // --- State Management ---
+    // --- State ---
     const VIEW = { scale: 2.0, zoom: 1.0, panX: 0, panY: 0, dragging: false, lx: 0, ly: 0 };
     const STATE = { shape: 'L', inputs: [], straights: [], bendDirs: [], bendSeq: [], BA: 0, OSSB: 0, T: 2, R: 3, Angle: 90 };
 
@@ -200,11 +190,7 @@
         
         const c = document.getElementById('simCanvas');
         const start = (x,y) => { VIEW.dragging=true; VIEW.lx=x; VIEW.ly=y; };
-        const move = (x,y) => { 
-            if(!VIEW.dragging) return; 
-            VIEW.panX += x - VIEW.lx; VIEW.panY += y - VIEW.ly; 
-            VIEW.lx=x; VIEW.ly=y; draw(); 
-        };
+        const move = (x,y) => { if(!VIEW.dragging)return; VIEW.panX+=x-VIEW.lx; VIEW.panY+=y-VIEW.ly; VIEW.lx=x; VIEW.ly=y; draw(); };
         const end = () => { VIEW.dragging=false; };
 
         c.addEventListener('mousedown', e=>start(e.clientX, e.clientY));
@@ -229,12 +215,11 @@
             'Omega': [{l:'Flange A', v:30}, {l:'Web B', v:50}, {l:'Top C', v:60}, {l:'Web D', v:50}, {l:'Flange E', v:30}]
         };
         presets[type].forEach(f => {
-            div.innerHTML += `<div class="input-group"><div class="input-wrap"><label>${f.l}</label><input type="number" class="dim-field" value="${f.v}" oninput="update()"></div></div>`;
+            div.innerHTML += `<div class="row"><div class="col"><label>${f.l}</label><input type="number" class="dim-field" value="${f.v}" oninput="update()"></div></div>`;
         });
     }
 
     function update() {
-        // Read
         STATE.T = parseFloat(document.getElementById('inp_T').value) || 0;
         STATE.R = parseFloat(document.getElementById('inp_R').value) || 0;
         const K = parseFloat(document.getElementById('inp_K').value) || 0;
@@ -252,7 +237,6 @@
         document.querySelectorAll('.dim-field').forEach(el => dims.push(parseFloat(el.value)||0));
         STATE.inputs = dims;
 
-        // Build Straights
         if(STATE.shape==='L') {
             STATE.straights=[dims[0]-STATE.OSSB, dims[1]-STATE.OSSB];
             STATE.bendDirs=[-1]; STATE.bendSeq=[0];
@@ -260,10 +244,7 @@
             STATE.straights=[dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-STATE.OSSB];
             STATE.bendDirs=[-1,-1]; STATE.bendSeq=[0,1];
         } else if(STATE.shape==='Omega') {
-            STATE.straights=[
-                dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-2*STATE.OSSB,
-                dims[3]-2*STATE.OSSB, dims[4]-STATE.OSSB
-            ];
+            STATE.straights=[dims[0]-STATE.OSSB, dims[1]-2*STATE.OSSB, dims[2]-2*STATE.OSSB, dims[3]-2*STATE.OSSB, dims[4]-STATE.OSSB];
             STATE.bendDirs=[-1,1,1,-1]; STATE.bendSeq=[0,3,1,2];
         }
 
@@ -280,7 +261,7 @@
             let isOmegaWeb = (STATE.shape === 'Omega' && (i === 1 || i === 3));
             let proc = (isOmegaWeb || isEnd) ? ext[i] - STATE.OSSB + (STATE.BA/2) : ext[i] - 2*STATE.OSSB + STATE.BA;
             tot += proc;
-            tb.innerHTML += `<tr><td>${i+1}</td><td class="val-ext">${ext[i].toFixed(2)}</td><td class="val-proc">${proc.toFixed(2)}</td></tr>`;
+            tb.innerHTML += `<tr><td>${i+1}</td><td class="txt-blue">${ext[i].toFixed(2)}</td><td class="txt-red">${proc.toFixed(2)}</td></tr>`;
         });
         document.getElementById('out_Total').innerText = tot.toFixed(2);
         document.getElementById('out_BA').innerText = STATE.BA.toFixed(2);
@@ -295,7 +276,6 @@
 
         const progress = parseFloat(document.getElementById('inp_Slider').value) / 100;
         
-        // Angles
         let angles = new Array(STATE.bendDirs.length).fill(0);
         let steps = STATE.bendSeq.length;
         let stepIdx = Math.floor(progress * steps);
@@ -307,7 +287,7 @@
         if(progress > 0) angles[STATE.bendSeq[stepIdx]] = (targetRad * STATE.bendDirs[STATE.bendSeq[stepIdx]]) * localP;
 
         const lbls = STATE.shape==='Omega' ? ['A','E','B','D'] : [`${stepIdx+1}`,`${stepIdx+2}`];
-        document.getElementById('step_desc').innerText = progress===0?"FLAT":(progress===1?"FINISHED":`BENDING ${lbls[stepIdx]}`);
+        document.getElementById('step_desc').innerText = progress===0?"FLAT PATTERN":(progress===1?"FINISHED":`BENDING ${lbls[stepIdx]}`);
 
         // Nodes (Neutral Axis)
         let nodes = [{x:0, y:0}];
@@ -339,36 +319,35 @@
 
         ctx.rotate(-baseAng); ctx.translate(-mx*S, -my*S);
 
-        // --- DRAW BED ---
+        // Bed
         let bedY = p1.y*S + (STATE.T*S)/2 + 2;
-        ctx.fillStyle = "#f5f5f5"; ctx.fillRect(mx*S - 500, bedY, 1000, 20);
+        ctx.fillStyle = "#f1f1f1"; ctx.fillRect(mx*S - 500, bedY, 1000, 20);
         ctx.strokeStyle = "#ddd"; ctx.strokeRect(mx*S - 500, bedY, 1000, 20);
         ctx.fillStyle = "#ccc"; ctx.beginPath(); ctx.moveTo(mx*S-25, bedY+30); ctx.lineTo(mx*S, bedY+2); ctx.lineTo(mx*S+25, bedY+30); ctx.fill();
 
-        // --- DRAW PART (CAD Style) ---
-        drawPart(ctx, nodes, S);
+        // PART
+        drawPartProfile(ctx, nodes, S);
 
-        // --- DRAW DIMENSIONS ---
+        // DIMS
         drawDimensions(ctx, nodes, S);
 
-        // --- Suction ---
+        // SUCTION
         drawSuction(ctx, nodes[anchor], nodes[anchor+1], S);
 
         ctx.restore();
     }
 
-    function drawPart(ctx, nodes, S) {
-        // Simple visualization: Thick stroke with round joins for radii
+    function drawPartProfile(ctx, nodes, S) {
         ctx.lineJoin = "round"; ctx.lineCap = "round";
         
-        // Outer Body
+        // Solid Outer
         ctx.lineWidth = STATE.T * S;
-        ctx.strokeStyle = "#333";
+        ctx.strokeStyle = "#37474f";
         ctx.beginPath();
         nodes.forEach((n,i)=>{ i==0 ? ctx.moveTo(n.x*S, n.y*S) : ctx.lineTo(n.x*S, n.y*S); });
         ctx.stroke();
 
-        // Inner Light Fill
+        // Inner Fill
         ctx.lineWidth = (STATE.T * S) - 2;
         ctx.strokeStyle = "#cfd8dc";
         ctx.stroke();
@@ -380,46 +359,50 @@
         STATE.straights.forEach((st, i) => {
             let n1 = nodes[i], n2 = nodes[i+1];
             
-            // Calc Vectors
             let dx = n2.x - n1.x, dy = n2.y - n1.y;
             let len = Math.sqrt(dx*dx + dy*dy);
             let ux = dx/len, uy = dy/len;
-            let nx = -uy, ny = ux;
+            let nx = -uy, ny = ux; // Outward Normal
 
-            // Values
+            // 1. Process Dim (Red)
             let isEnd = (i==0 || i==STATE.straights.length-1);
             let isOmegaWeb = (STATE.shape === 'Omega' && (i === 1 || i === 3));
             let valProc = (isOmegaWeb || isEnd) ? STATE.inputs[i] - STATE.OSSB + (STATE.BA/2) : STATE.inputs[i] - 2*STATE.OSSB + STATE.BA;
-            let valExt = STATE.inputs[i];
-
-            // 1. Process (Red) - Centerline
             let offProc = halfT + (25 * VIEW.zoom);
-            drawDimLine(ctx, n1, n2, ux, uy, nx, ny, 0, offProc, 0, valProc.toFixed(2), "#cc0000", S);
+            drawDimLine(ctx, n1, n2, nx, ny, ux, uy, 0, offProc, 0, valProc.toFixed(2), "#cc0000", S);
 
-            // 2. External (Blue) - CAD Style
-            // Offset from Neutral Axis = halfT (surface) + spacing
-            let offExt = halfT + (60 * VIEW.zoom);
+            // 2. External Dim (Blue) - ATTACHED TO EDGE
+            let valExt = STATE.inputs[i];
             
-            // Extension amount (Virtual Sharp)
-            // We start from surface corner and go back by OSSB
+            // Offset: Exactly at the Surface
+            let offExt = halfT; 
+            
+            // Move Dim Line Outwards so it doesn't overlap line
+            let dimLineHeight = halfT + (60 * VIEW.zoom);
+
+            // Extension Length (OSSB scaled)
             let extLen = STATE.OSSB * S;
-            
-            drawDimLine(ctx, n1, n2, ux, uy, nx, ny, halfT, offExt, extLen, valExt.toFixed(2), "#0044cc", S, true);
+
+            drawDimLine(ctx, n1, n2, nx, ny, ux, uy, offExt, dimLineHeight, extLen, valExt.toFixed(2), "#0044cc", S, true);
         });
     }
 
-    function drawDimLine(ctx, n1, n2, ux, uy, nx, ny, surfOffset, dimOffset, extLen, txt, col, S, showExtLines=false) {
-        // Base Points (Neutral Axis)
+    function drawDimLine(ctx, n1, n2, nx, ny, ux, uy, surfOffset, dimOffset, extLen, txt, col, S, isExt=false) {
+        // Base Points (Neutral Axis scaled)
         let bx1 = n1.x*S, by1 = n1.y*S;
         let bx2 = n2.x*S, by2 = n2.y*S;
 
-        // Virtual Sharp Points (Projected on Surface)
-        let vs1x = bx1 + nx*surfOffset - ux*extLen;
-        let vs1y = by1 + ny*surfOffset - uy*extLen;
-        let vs2x = bx2 + nx*surfOffset + ux*extLen;
-        let vs2y = by2 + ny*surfOffset + uy*extLen;
+        // "Virtual Sharp" Points on the Surface
+        // Start at Surface -> extend backward/forward by OSSB
+        // Surface Point = Base + Normal * surfOffset
+        let sx1 = bx1 + nx*surfOffset, sy1 = by1 + ny*surfOffset;
+        let sx2 = bx2 + nx*surfOffset, sy2 = by2 + ny*surfOffset;
 
-        // Dim Line Points
+        // Virtual Sharps (Origin of Witness Lines)
+        let vs1x = sx1 - ux*extLen, vs1y = sy1 - uy*extLen;
+        let vs2x = sx2 + ux*extLen, vs2y = sy2 + uy*extLen;
+
+        // Dimension Line Points
         let d1x = bx1 + nx*dimOffset - ux*extLen;
         let d1y = by1 + ny*dimOffset - uy*extLen;
         let d2x = bx2 + nx*dimOffset + ux*extLen;
@@ -432,17 +415,15 @@
         // Draw Main Line
         ctx.beginPath(); ctx.moveTo(d1x, d1y); ctx.lineTo(d2x, d2y); ctx.stroke();
 
-        // Extension Lines (Vertical connectors)
-        if(showExtLines) {
-            let gap = 5 * VIEW.zoom;
-            let overshoot = 5 * VIEW.zoom;
-            // Draw from VS to DimLine + overshoot
+        // Draw Extension Lines
+        if(isExt) {
+            // Draw EXACTLY from Virtual Sharp to Dim Line
+            // No gap, touches corner
             ctx.beginPath();
-            ctx.moveTo(vs1x + nx*gap, vs1y + ny*gap); ctx.lineTo(d1x + nx*overshoot, d1y + ny*overshoot);
-            ctx.moveTo(vs2x + nx*gap, vs2y + ny*gap); ctx.lineTo(d2x + nx*overshoot, d2y + ny*overshoot);
+            ctx.moveTo(vs1x, vs1y); ctx.lineTo(d1x, d1y);
+            ctx.moveTo(vs2x, vs2y); ctx.lineTo(d2x, d2y);
             ctx.stroke();
         } else {
-            // For Process dims, just small tick marks
             let tick = 4 * VIEW.zoom;
             ctx.beginPath();
             ctx.moveTo(d1x + nx*tick, d1y + ny*tick); ctx.lineTo(d1x - nx*tick, d1y - ny*tick);
@@ -450,13 +431,13 @@
             ctx.stroke();
         }
 
-        // Arrows (Slim CAD Style)
+        // Arrows
         drawArrow(ctx, d1x, d1y, d2x, d2y, VIEW.zoom);
         drawArrow(ctx, d2x, d2y, d1x, d1y, VIEW.zoom);
 
         // Text
         let mx = (d1x+d2x)/2, my = (d1y+d2y)/2;
-        let ang = Math.atan2(uy, ux);
+        let ang = Math.atan2(ny, nx) - Math.PI/2; 
         if(ang > Math.PI/2 || ang < -Math.PI/2) ang += Math.PI;
 
         ctx.translate(mx,my); ctx.rotate(ang);
@@ -473,8 +454,8 @@
     }
 
     function drawArrow(ctx, x1, y1, x2, y2, z) {
-        let len = 10 * z;
-        let width = 2.5 * z;
+        let len = 12 * z; // Longer
+        let width = 2.5 * z; // Slimmer
         let ang = Math.atan2(y2-y1, x2-x1);
         
         ctx.save();
@@ -499,12 +480,8 @@
         let w = 18*VIEW.zoom, h = 5*VIEW.zoom;
         
         ctx.strokeStyle = "#333"; ctx.lineWidth=1.5; ctx.fillStyle="rgba(0,0,0,0.05)";
-        
-        // Pads
         ctx.beginPath(); ctx.rect(-25*VIEW.zoom, -dist-h, w, h); ctx.fill(); ctx.stroke();
         ctx.beginPath(); ctx.rect(7*VIEW.zoom, -dist-h, w, h); ctx.fill(); ctx.stroke();
-        
-        // Frame
         ctx.beginPath(); 
         ctx.moveTo(-16*VIEW.zoom, -dist-h); ctx.lineTo(-16*VIEW.zoom, -dist-h-12*VIEW.zoom);
         ctx.moveTo(16*VIEW.zoom, -dist-h); ctx.lineTo(16*VIEW.zoom, -dist-h-12*VIEW.zoom);
